@@ -23,7 +23,7 @@ jobs:
         run: |
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
           echo "SDK: $SDK_PATH"
-          clang -arch arm64 -dynamiclib -o SSLBypass.dylib SSLBypass/SSLBypass/SSLBypass_standalone.m \
+          clang -arch arm64 -dynamiclib -o SSLBypass.dylib SSLBypass/SSLBypass_standalone.m \
             -framework Foundation -framework Security -framework CoreFoundation \
             -miphoneos-version-min=14.0 \
             -isysroot "$SDK_PATH"
