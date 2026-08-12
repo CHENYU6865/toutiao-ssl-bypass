@@ -1,0 +1,9 @@
+Package: com.yourname.sslbypass
+Name: SSLBypass
+Version: 1.0
+Architecture: iphoneos-arm
+Description: SSL Pinning Bypass for TrollFools injection
+Maintainer: you
+Author: you
+Section: Tweaks
+Priority: optional

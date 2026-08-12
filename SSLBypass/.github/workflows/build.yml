@@ -1,0 +1,37 @@
+name: Build SSLBypass dylib
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_*.app | tail -1)
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+
+      - name: Build arm64 dylib
+        run: |
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "SDK: $SDK_PATH"
+          clang -arch arm64 -dynamiclib -o SSLBypass.dylib SSLBypass_standalone.m \
+            -framework Foundation -framework Security -framework CoreFoundation \
+            -miphoneos-version-min=14.0 \
+            -isysroot "$SDK_PATH"
+          ls -lh SSLBypass.dylib
+          file SSLBypass.dylib
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SSLBypass.dylib
+          path: SSLBypass.dylib
