@@ -64,6 +64,15 @@ static int prepend_rebindings(struct rebindings_entry **rebindings_head, struct 
 static void perform_rebinding_with_section(struct rebindings_entry *rebindings, section_t *section, intptr_t slide, nlist_t *symtab, char *strtab, uint32_t *indirect_symtab) {
     uint32_t *indirect_symbol_indices = indirect_symtab + section->reserved1;
     void **indirect_symbol_bindings = (void **)((uintptr_t)slide + section->addr);
+    if (!indirect_symbol_bindings || section->size == 0) return;
+
+    uintptr_t section_start = (uintptr_t)indirect_symbol_bindings;
+    uintptr_t section_end = section_start + section->size;
+    uintptr_t page_size = getpagesize();
+    uintptr_t start_page = section_start & ~(page_size - 1);
+    uintptr_t end_page = (section_end + page_size - 1) & ~(page_size - 1);
+    mprotect((void *)start_page, end_page - start_page, PROT_READ | PROT_WRITE);
+
     for (uint i = 0; i < section->size / sizeof(void *); i++) {
         uint32_t symtab_index = indirect_symbol_indices[i];
         if (symtab_index == INDIRECT_SYMBOL_ABS || symtab_index == INDIRECT_SYMBOL_LOCAL || symtab_index == (INDIRECT_SYMBOL_LOCAL | INDIRECT_SYMBOL_ABS)) continue;
@@ -84,6 +93,8 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings, 
         }
     symbol_loop:;
     }
+
+    mprotect((void *)start_page, end_page - start_page, PROT_READ);
 }
 
 static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const mach_header_t *header, intptr_t slide) {
