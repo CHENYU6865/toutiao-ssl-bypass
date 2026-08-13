@@ -19,19 +19,36 @@ jobs:
           sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
 
-      - name: Build arm64 dylib (unsigned)
+      - name: Build full arm64 dylib (fishhook + SecTrust)
         run: |
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
           echo "SDK: $SDK_PATH"
-          clang -arch arm64 -dynamiclib -o SSLBypass.dylib SSLBypass/SSLBypass_standalone.m \
+          clang -arch arm64 -dynamiclib -o SSLBypass_full.dylib SSLBypass/SSLBypass_standalone.m \
             -framework Foundation -framework Security -framework CoreFoundation \
             -miphoneos-version-min=14.0 \
             -isysroot "$SDK_PATH"
-          ls -lh SSLBypass.dylib
-          file SSLBypass.dylib
+          ls -lh SSLBypass_full.dylib
+          file SSLBypass_full.dylib
 
-      - name: Upload artifact
+      - name: Build light arm64 dylib (NSURLSession only)
+        run: |
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "SDK: $SDK_PATH"
+          clang -arch arm64 -dynamiclib -o SSLBypass_light.dylib SSLBypass/SSLBypass_nofishhook.m \
+            -framework Foundation \
+            -miphoneos-version-min=14.0 \
+            -isysroot "$SDK_PATH"
+          ls -lh SSLBypass_light.dylib
+          file SSLBypass_light.dylib
+
+      - name: Upload full artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SSLBypass.dylib
-          path: SSLBypass.dylib
+          name: SSLBypass_full.dylib
+          path: SSLBypass_full.dylib
+
+      - name: Upload light artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SSLBypass_light.dylib
+          path: SSLBypass_light.dylib
