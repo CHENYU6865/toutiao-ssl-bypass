@@ -15,6 +15,11 @@
 
 #pragma mark - ===== 内嵌 fishhook 实现 =====
 
+#ifndef SEG_DATA_CONST
+#define SEG_DATA_CONST "__DATA_CONST"
+#endif
+
+
 #if defined(__LP64__)
 typedef struct mach_header_64 mach_header_t;
 typedef struct segment_command_64 segment_command_t;
