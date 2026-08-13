@@ -15,6 +15,21 @@
 
 #pragma mark - ===== 内嵌 fishhook 实现 =====
 
+#if defined(__LP64__)
+typedef struct mach_header_64 mach_header_t;
+typedef struct segment_command_64 segment_command_t;
+typedef struct section_64 section_t;
+typedef struct nlist_64 nlist_t;
+#define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT_64
+#else
+typedef struct mach_header mach_header_t;
+typedef struct segment_command segment_command_t;
+typedef struct section section_t;
+typedef struct nlist nlist_t;
+#define LC_SEGMENT_ARCH_DEPENDENT LC_SEGMENT
+#endif
+
+
 struct rebinding {
     const char *name;
     void *replacement;
@@ -66,7 +81,7 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings, 
     }
 }
 
-static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const struct mach_header *header, intptr_t slide) {
+static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const mach_header_t *header, intptr_t slide) {
     Dl_info info;
     if (dladdr(header, &info) == 0) return;
     segment_command_t *cur_seg_cmd;
@@ -107,7 +122,7 @@ static void rebind_symbols_for_image(struct rebindings_entry *rebindings, const 
 }
 
 static void _rebind_symbols_for_image(const struct mach_header *header, intptr_t slide) {
-    rebind_symbols_for_image(_rebindings_head, header, slide);
+    rebind_symbols_for_image(_rebindings_head, (const mach_header_t *)header, slide);
 }
 
 int rebind_symbols(struct rebinding rebindings[], size_t rebindings_nel) {
