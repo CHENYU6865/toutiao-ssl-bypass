@@ -28,6 +28,8 @@ jobs:
             -miphoneos-version-min=14.0 \
             -isysroot "$SDK_PATH"
           ls -lh SSLBypass.dylib
+          codesign -s - --force --preserve-metadata=entitlements,identifier,flags SSLBypass.dylib
+          codesign -dv SSLBypass.dylib
           file SSLBypass.dylib
 
       - name: Upload artifact
