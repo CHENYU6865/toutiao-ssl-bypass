@@ -13,6 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install ldid
+        run: |
+          brew install ldid
+          which ldid
+          ldid -h || true
+
       - name: Select Xcode
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode_*.app | tail -1)
@@ -28,8 +34,8 @@ jobs:
             -miphoneos-version-min=14.0 \
             -isysroot "$SDK_PATH"
           ls -lh SSLBypass.dylib
-          codesign -s - --force --preserve-metadata=entitlements,identifier,flags SSLBypass.dylib
-          codesign -dv SSLBypass.dylib
+          ldid -S SSLBypass.dylib
+          ldid -d SSLBypass.dylib || true
           file SSLBypass.dylib
 
       - name: Upload artifact
